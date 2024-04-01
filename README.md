@@ -93,6 +93,7 @@ Note: TickerTape provides the GICS compliant sectors, whereas Trendlyne doesn't,
     -  An optimization code block optimizes the portfolio by maximing the sharpe, treynor, and alpha in different scenarios, and gives an asset allocation strategy for each case.
  
 - The portfolios created by either of the two methods provide an efficient way to manage multiple portfolios at once, and is useful to track performance and investment strategies.
+- The periodic data extraction, and replication for multiple portfolios can be automated using Microsoft Power Automate.
 
 
 ## Conclusion
