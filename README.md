@@ -8,6 +8,10 @@ The deliverables of this project are:
 - Use Technical analysis to monitor the stocks within a portfolio to generate buy/sell indicator for a particular stock, at a particular time.
 - Create a portfolio from a basket of stocks and use optimization methods to maximize returns by optimal asset allocation.
 
+## Disclaimer
+- The results from this analysis is only for research purposes and shouldn't be considered as any direct invesment advice.
+- Some of the data used is from paid subscribed sources.
+
 ## Data Source
 
 - Yahoo Finance
