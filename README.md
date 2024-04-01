@@ -82,7 +82,7 @@ Note: TickerTape provides the GICS compliant sectors, whereas Trendlyne doesn't,
  
   #### If you want to create a portfolio from scratch (80% python - 20% excel):
     -  Get the tickers of the stock you want to invest in, and the market benchmark for the portfolio.
-    -  Get the stock industry, beta from ezxel stock data function, and also their investment categories.
+    -  Get the stock industry, beta from exel stock data function, and also their investment categories.
     -  Select the period of investment, and the corresponding risk-free rate od return, and also the number of initial shares allocation for each stock.
     -  Run the 'Portfolio Optimization.ipynb' for the above data. The code downloads stock price history data from yahoofinance, and calculates stock return and volatility.
     -  Based on given and extracted data, it calculates important portfolio statistics, and prints them out in a table below the portfolio.
