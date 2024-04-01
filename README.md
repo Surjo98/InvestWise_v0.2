@@ -1,5 +1,5 @@
 
-# Stock Analysis and Recommendation
+# InvestWise: Your Personal Stock Analysis and Portfolio Optimizatio Engine
 
 The deliverables of this project are:
 
