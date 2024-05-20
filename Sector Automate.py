@@ -6,6 +6,82 @@ from openpyxl import load_workbook, Workbook
 
 from sklearn.impute import KNNImputer
 
+# Path to the Trendlyne folder
+folder_path_tl = "data\Trendlyne"
+folder_path_tt = "data\Tickertape"
+
+# Split all_stocks.csv into sector-wise .csv files
+file_path = os.path.join(folder_path_tt, 'all_stocks.csv')
+df = pd.read_csv(file_path)
+
+# Dictionary to map subsectors to sectors
+subsector_to_sector = {
+    'Consumer Discretionary': ['Auto Parts', 'Tires & Rubber', 'Four Wheelers', 'Three Wheelers', 'Two Wheelers', 'Cycles', 'Education Services', 'Wellness Services', 'Hotels, Resorts & Cruise Lines', 'Restaurants & Cafes', 'Theme Parks & Gaming', 'Tour & Travel Services', 'Home Electronics & Appliances', 'Home Furnishing', 'Housewares', 'Retail - Apparel', 'Retail - Department Stores', 'Retail - Online', 'Retail - Speciality', 'Apparel & Accessories', 'Footwear', 'Precious Metals, Jewellery & Watches', 'Textiles', 'Animation'],
+    'Communication Services': ['Advertising', 'Cable & D2H', 'Movies & TV Serials', 'Publishing', 'Radio', 'Theatres', 'TV Channels & Broadcasters', 'Online Services', 'Telecom Equipments', 'Telecom Infrastructure', 'Telecom Services'],
+    'Consumer Staples': ['Alcoholic Beverages', 'Soft Drinks', 'Tea & Coffee', 'Agro Products', 'FMCG - Foods', 'Packaged Foods & Meats', 'Seeds', 'Sugar', 'FMCG - Household Products', 'FMCG - Personal Products', 'FMCG - Tobacco'],
+    'Energy': ['Oil & Gas - Equipment & Services', 'Oil & Gas - Exploration & Production', 'Oil & Gas - Refining & Marketing', 'Oil & Gas - Storage & Transportation'],
+    'Financials': ['Private Banks', 'Public Banks', 'Asset Management', 'Investment Banking & Brokerage', 'Stock Exchanges & Ratings', 'Consumer Finance', 'Diversified Financials', 'Specialized Finance', 'Insurance', 'Home Financing', 'Payment Infrastructure'],
+    'Health Care' : ['Biotechnology', 'Health Care Equipment & Supplies', 'Hospitals & Diagnostic Centres', 'Labs & Life Sciences Services', 'Pharmaceuticals'],
+    'Industrials' : ['Airlines', 'Building Products - Ceramics', 'Building Products - Glass', 'Building Products - Granite', 'Building Products - Laminates', 'Building Products - Pipes', 'Business Support Services', 'Stationery', 'Construction & Engineering', 'Batteries', 'Cables', 'Electrical Components & Equipments', 'Heavy Electrical Equipments', 'Conglomerates', 'Agricultural & Farm Machinery', 'Heavy Machinery', 'Industrial Machinery', 'Rail', 'Shipbuilding', 'Tractors', 'Trucks & Buses', 'Employment Services', 'Airports', 'Dredging', 'Logistics', 'Ports', 'Roads', 'Renewable Energy Equipment & Services', 'Building Products - Prefab Structures', 'Commodities Trading', 'Aerospace & Defense Equipments'],
+    'Information Technology': ['Communication & Networking', 'Electronic Equipments', 'Technology Hardware', 'IT Services & Consulting', 'Outsourced services', 'Software Services'],
+    'Materials': ['Commodity Chemicals', 'Diversified Chemicals', 'Fertilizers & Agro Chemicals', 'Paints', 'Plastic Products', 'Specialty Chemicals', 'Cement', 'Packaging', 'Iron & Steel', 'Metals - Aluminium', 'Metals - Coke', 'Metals - Copper', 'Metals - Diversified', 'Metals - Lead', 'Mining - Coal', 'Mining - Copper', 'Mining - Diversified', 'Mining - Iron Ore', 'Mining - Manganese', 'Paper Products', 'Wood Products'],
+    'Real Estate': ['Real Estate'],
+    'Utilities' : ['Power Infrastructure', 'Power Transmission & Distribution', 'Gas Distribution', 'Power Trading & Consultancy', 'Power Generation', 'Renewable Energy', 'Water Management'],
+    'ETF': ['Gold', 'Equity', 'Debt']
+    # Add more sectors and their corresponding subsectors as needed
+}
+
+# Reverse the dictionary to map each subsector to its sector
+subsector_to_sector_reverse = {subsector: sector for sector, subsectors in subsector_to_sector.items() for subsector in subsectors}
+
+# Map the subsector to sector
+df['Sector'] = df['Sub-Sector'].map(subsector_to_sector_reverse)
+
+# Split the DataFrame into multiple DataFrames based on the 'Sector' column
+sector_dfs = {sector: group.drop(columns=['Sector']) for sector, group in df.groupby('Sector')}
+
+# Save the DataFrames to CSV
+for sector, sector_df in sector_dfs.items():
+    if not sector_df.empty:
+        file_path = os.path.join(folder_path_tt, f'{sector}.csv')
+        sector_df.to_csv(file_path, index=False)
+
+# List to store dataframes
+dfs = []
+for file in os.listdir(folder_path_tl):
+    if file.endswith(".xlsx"):
+
+        file_path = os.path.join(folder_path_tl, file)
+        df = pd.read_excel(file_path)
+        df.drop(columns=['Stock Name', 'BSE code', 'ISIN', 'Current Price', 'Industry Name'], inplace=True)
+        df.rename(columns={'NSE code': 'Ticker'}, inplace=True)
+        dfs.append(df)
+
+df_tl = pd.concat(dfs, ignore_index=True)
+
+
+dfs = []
+for file_name in os.listdir(folder_path_tt):
+    if file_name.endswith('.csv'):
+
+        file_path = os.path.join(folder_path_tt, file_name)
+        df = pd.read_csv(file_path)
+        df.insert(2, 'Sector', file_name.split('.')[0])
+        dfs.append(df)
+
+df_tt = pd.concat(dfs, ignore_index=True)
+
+# Concatenate sub-dfs into final df
+df = pd.merge(df_tt, df_tl, on='Ticker', how='inner')
+
+# Create a new Excel writer object
+with pd.ExcelWriter('Sector_Universe_Data.xlsx') as writer:
+    # Iterate over unique sectors
+    for sector in df['Sector'].unique():
+        sector_df = df[df['Sector'] == sector]
+        sector_df.to_excel(writer, sheet_name=sector, index=False)
+
+
 # data files
 input_file = 'Sector_Universe_Data.xlsx'
 output_file = 'Sector Analysis New.xlsx'
@@ -133,13 +209,13 @@ for sheet_name in wb_in.sheetnames:
     # Define weights for each rank
     weights = {
         'Rank1': 0.2,
-        'Rank2': 0.15,
-        'Rank3': 0.2,
+        'Rank2': 0.1,
+        'Rank3': 0.15,
         'Rank4': 0.1,
         'Rank5': 0.1,
         'Rank6': 0.05,
         'Rank7': 0.1,
-        'Rank8': 0.1
+        'Rank8': 0.2
     }
 
     # Group by 'Market Cap' categories
